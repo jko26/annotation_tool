@@ -20,6 +20,12 @@ endo-io fit \
   --out model.npz
 ```
 
+If inside images live in subfolders (e.g. `clips/clips_0/`, `clips/clips_1/`, …), add **`--recursive`** (or **`-r`**) so all nested images are included:
+
+```bash
+endo-io fit -r --inside-dir /path/to/clips --outside-dir /path/to/outside ...
+```
+
 Or a CSV with columns `path,label` where `label` is `inside` or `outside`:
 
 ```bash

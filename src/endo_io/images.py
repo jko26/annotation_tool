@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -9,14 +8,26 @@ from PIL import Image
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
 
 
-def list_image_paths(root: str | Path) -> list[Path]:
+def list_image_paths(root: str | Path, *, recursive: bool = False) -> list[Path]:
+    """
+    List image files under ``root``.
+
+    If ``recursive`` is False, only immediate children of ``root`` are included.
+    If True, all descendant files with a known image extension are included (e.g.
+    ``clips/clips_0/frame0001.png`` when ``root`` is ``clips``).
+    """
     root = Path(root)
     if not root.is_dir():
         raise FileNotFoundError(f"Not a directory: {root}")
     paths: list[Path] = []
-    for p in sorted(root.iterdir()):
-        if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS:
-            paths.append(p)
+    if recursive:
+        for p in sorted(root.rglob("*")):
+            if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS:
+                paths.append(p)
+    else:
+        for p in sorted(root.iterdir()):
+            if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS:
+                paths.append(p)
     return paths
 
 

@@ -53,12 +53,12 @@ def cmd_fit(args: argparse.Namespace) -> int:
         if not args.inside_dir or not args.outside_dir:
             print("fit: provide --train-csv or both --inside-dir and --outside-dir", file=sys.stderr)
             return 2
-        inside = list_image_paths(args.inside_dir)
-        outside = list_image_paths(args.outside_dir)
+        inside = list_image_paths(args.inside_dir, recursive=args.recursive)
+        outside = list_image_paths(args.outside_dir, recursive=args.recursive)
 
     cal_paths: list[Path] | None = None
     if args.calibration_dir:
-        cal_paths = list_image_paths(args.calibration_dir)
+        cal_paths = list_image_paths(args.calibration_dir, recursive=args.recursive)
         if not cal_paths:
             print("Warning: calibration directory has no images", file=sys.stderr)
 
@@ -86,7 +86,7 @@ def cmd_predict(args: argparse.Namespace) -> int:
     if args.input_csv:
         paths = _read_paths_csv(Path(args.input_csv))
     elif args.input_dir:
-        paths = list_image_paths(args.input_dir)
+        paths = list_image_paths(args.input_dir, recursive=args.recursive)
     else:
         print("predict: provide --input-dir or --input-csv", file=sys.stderr)
         return 2
@@ -150,6 +150,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("l1", "l2", "chi_square", "hellinger"),
         default="l2",
     )
+    pf.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="Include images in subdirectories (e.g. clips/clips_0/, clips_1/...)",
+    )
     pf.set_defaults(func=cmd_fit)
 
     pp = sub.add_parser("predict", help="Classify images using a saved model")
@@ -161,6 +167,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--fallback-black-mask",
         action="store_true",
         help="If image size differs from calibration mask, use per-pixel black threshold only",
+    )
+    pp.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="Include images in subdirectories under --input-dir",
     )
     pp.set_defaults(func=cmd_predict)
 
